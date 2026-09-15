@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TO DO LIST · 不甘于平庸，就有所行动</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root {
+      --blue-1: #1e6bff;
+      --blue-2: #4a90ff;
+      --blue-3: #7eb6ff;
+      --blue-soft: #e8f1ff;
+      --blue-bg: #f5f9ff;
+      --ink: #1a2b4a;
+      --ink-soft: #6b7d99;
+      --line: #e3ecf7;
+      --card: #ffffff;
+      --done: #c9d4e3;
+      --accent: #1e6bff;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      background: linear-gradient(160deg, #e8f1ff 0%, #ffffff 50%, #f5f9ff 100%);
+      min-height: 100vh;
+      padding: 40px 16px;
+      color: var(--ink);
+    }
+    .container {
+      max-width: 760px;
+      margin: 0 auto;
+      background: var(--card);
+      border-radius: 24px;
+      box-shadow: 0 20px 60px rgba(30,107,255,0.12);
+      overflow: hidden;
+      border: 1px solid var(--line);
+    }
+
+    /* Hero - 蓝白渐变 */
+    header {
+      position: relative;
+      background: linear-gradient(135deg, #1e6bff 0%, #4a90ff 100%);
+      color: #fff;
+      padding: 36px 28px 30px;
+      overflow: hidden;
+    }
+    header::before {
+      content: "";
+      position: absolute;
+      top: -50px; right: -50px;
+      width: 180px; height: 180px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 50%;
+    }
+    header::after {
+      content: "";
+      position: absolute;
+      bottom: -60px; left: 20%;
+      width: 120px; height: 120px;
+      background: rgba(255,255,255,0.06);
+      border-radius: 50%;
+    }
+    .logo {
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: 4px;
+      margin-bottom: 6px;
+      position: relative;
+    }
+    .slogan {
+      font-size: 14px;
+      opacity: 0.95;
+      font-style: italic;
+      margin-bottom: 14px;
+      position: relative;
+    }
+    .date-bar {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(255,255,255,0.2);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 13px;
+      backdrop-filter: blur(4px);
+      position: relative;
+    }
+
+    /* 统计条 */
+    .stats {
+      display: flex;
+      gap: 10px;
+      padding: 18px 24px;
+      background: var(--blue-bg);
+      border-bottom: 1px solid var(--line);
+    }
+    .stat-card {
+      flex: 1;
+      background: #fff;
+      border-radius: 14px;
+      padding: 14px 10px;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(30,107,255,0.08);
+      border: 1px solid var(--line);
+    }
+    .stat-num {
+      font-size: 22px;
+      font-weight: 800;
+      color: var(--blue-1);
+      line-height: 1;
+    }
+    .stat-num.done-color { color: var(--blue-2); }
+    .stat-label {
+      font-size: 12px;
+      color: var(--ink-soft);
+      margin-top: 6px;
+    }
+    .progress-wrap {
+      flex: 2;
+      background: #fff;
+      border-radius: 14px;
+      padding: 12px 14px;
+      box-shadow: 0 4px 12px rgba(30,107,255,0.08);
+      border: 1px solid var(--line);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 6px;
+    }
+    .progress-text {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--ink-soft);
+    }
+    .progress-bar {
+      height: 8px;
+      background: var(--blue-soft);
+      border-radius: 4px;
+      overflow: hidden;
+    }
+    #progressFill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #4a90ff, #1e6bff);
+      border-radius: 4px;
+      transition: width 0.4s ease;
+    }
+
+    /* 输入区 */
+    .input-area {
+      display: flex;
+      gap: 10px;
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--line);
+    }
+    #todoInput {
+      flex: 1;
+      padding: 14px 18px;
+      font-size: 15px;
+      border: 2px solid var(--line);
+      border-radius: 24px;
+      outline: none;
+      transition: all 0.2s;
+      background: var(--blue-bg);
+      color: var(--ink);
+    }
+    #todoInput:focus {
+      border-color: var(--blue-1);
+      background: #fff;
+      box-shadow: 0 4px 12px rgba(30,107,255,0.15);
+    }
+    #addBtn {
+      padding: 14px 22px;
+      background: linear-gradient(135deg, #4a90ff, #1e6bff);
+      color: #fff;
+      border: none;
+      border-radius: 24px;
+      font-size: 15px;
+      font-weight: 600;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(30,107,255,0.3);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    #addBtn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(30,107,255,0.4);
+    }
+
+    /* 学习计划 */
+    .plan-area { border-bottom: 1px solid var(--line); }
+    .plan-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 24px;
+      background: linear-gradient(90deg, var(--blue-bg), #fff);
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--blue-1);
+      user-select: none;
+    }
+    .plan-header:hover { background: linear-gradient(90deg, #dbeafe, #fff); }
+    .plan-header-left { display: flex; align-items: center; gap: 8px; }
+    .plan-icon {
+      width: 22px; height: 22px;
+      background: linear-gradient(135deg, #4a90ff, #1e6bff);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      color: #fff; font-size: 13px; font-weight: bold;
+    }
+    #planToggle { transition: transform 0.2s; color: var(--blue-1); }
+    #planToggle.open { transform: rotate(90deg); }
+    .plan-form {
+      padding: 18px 24px;
+      display: none;
+      flex-direction: column;
+      gap: 10px;
+      background: var(--blue-bg);
+    }
+    .plan-form.open { display: flex; }
+    .plan-form input {
+      padding: 12px 16px;
+      font-size: 14px;
+      border: 2px solid var(--line);
+      border-radius: 12px;
+      outline: none;
+      background: #fff;
+      color: var(--ink);
+      transition: all 0.2s;
+    }
+    .plan-form input:focus { border-color: var(--blue-1); }
+    #generateBtn {
+      padding: 12px 22px;
+      background: linear-gradient(135deg, #1e6bff, #4a90ff);
+      color: #fff;
+      border: none;
+      border-radius: 24px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      align-self: flex-start;
+      box-shadow: 0 4px 12px rgba(30,107,255,0.3);
+      transition: transform 0.2s;
+    }
+    #generateBtn:hover { transform: translateY(-2px); }
+
+    /* 柱状图待办区 */
+    .chart-section {
+      padding: 24px;
+    }
+    .chart-title {
+      font-size: 13px;
+      color: var(--ink-soft);
+      margin-bottom: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .chart-legend {
+      display: flex;
+      gap: 14px;
+      font-size: 12px;
+    }
+    .legend-dot {
+      display: inline-block;
+      width: 10px; height: 10px;
+      border-radius: 2px;
+      margin-right: 4px;
+      vertical-align: middle;
+    }
+    .legend-dot.todo { background: linear-gradient(180deg, #4a90ff, #1e6bff); }
+    .legend-dot.plan { background: linear-gradient(180deg, #7eb6ff, #4a90ff); border: 1px dashed #1e6bff; }
+    .legend-dot.done { background: var(--done); }
+
+    .chart-area {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+      min-height: 280px;
+      max-height: 320px;
+      padding: 16px 8px 50px;
+      background:
+        linear-gradient(to top, transparent 49px, var(--line) 49px, var(--line) 50px, transparent 50px) 0 0 / 100% 50px,
+        var(--blue-bg);
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      overflow-x: auto;
+      overflow-y: hidden;
+      position: relative;
+    }
+    .chart-area::-webkit-scrollbar { height: 6px; }
+    .chart-area::-webkit-scrollbar-thumb { background: var(--blue-3); border-radius: 3px; }
+
+    .bar-item {
+      flex: 0 0 56px;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-end;
+      position: relative;
+      cursor: pointer;
+      animation: growUp 0.4s ease;
+    }
+    @keyframes growUp {
+      from { transform: scaleY(0); opacity: 0; }
+      to { transform: scaleY(1); opacity: 1; }
+    }
+    .bar {
+      width: 100%;
+      background: linear-gradient(180deg, #4a90ff 0%, #1e6bff 100%);
+      border-radius: 8px 8px 2px 2px;
+      box-shadow: 0 4px 10px rgba(30,107,255,0.25);
+      position: relative;
+      transition: all 0.25s;
+      min-height: 40px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
+      padding: 8px 4px 0;
+      overflow: hidden;
+    }
+    .bar-item:hover .bar {
+      transform: translateY(-4px);
+      box-shadow: 0 8px 18px rgba(30,107,255,0.35);
+    }
+    .bar.plan {
+      background: linear-gradient(180deg, #7eb6ff 0%, #4a90ff 100%);
+      border: 1.5px dashed #1e6bff;
+    }
+    .bar.done {
+      background: linear-gradient(180deg, #e3ecf7 0%, #c9d4e3 100%);
+      box-shadow: none;
+      opacity: 0.7;
+    }
+    .bar.done::after {
+      content: "✓";
+      position: absolute;
+      top: 6px;
+      left: 0; right: 0;
+      text-align: center;
+      color: var(--blue-1);
+      font-size: 18px;
+      font-weight: bold;
+    }
+    .bar-text {
+      writing-mode: vertical-rl;
+      text-orientation: mixed;
+      font-size: 11px;
+      color: #fff;
+      max-height: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      margin-top: 18px;
+      padding-bottom: 4px;
+      font-weight: 500;
+    }
+    .bar.done .bar-text { color: var(--ink-soft); }
+    .bar-label {
+      font-size: 11px;
+      color: var(--ink-soft);
+      margin-top: 8px;
+      text-align: center;
+      font-weight: 600;
+    }
+    .bar-delete {
+      position: absolute;
+      top: -10px;
+      right: 2px;
+      width: 18px; height: 18px;
+      background: #ff5e7e;
+      color: #fff;
+      border: 2px solid #fff;
+      border-radius: 50%;
+      font-size: 11px;
+      cursor: pointer;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      z-index: 2;
+    }
+    .bar-item:hover .bar-delete { display: flex; }
+    .bar-delete:hover { background: #e03b5d; }
+
+    .empty-tip {
+      width: 100%;
+      text-align: center;
+      color: #b2bec3;
+      padding: 60px 20px;
+      font-size: 14px;
+    }
+    .empty-tip .emoji {
+      font-size: 40px;
+      display: block;
+      margin-bottom: 12px;
+    }
+    footer {
+      text-align: center;
+      padding: 18px;
+      color: var(--ink-soft);
+      font-size: 12px;
+      background: var(--blue-bg);
+      border-top: 1px solid var(--line);
+    }
+    footer .heart { color: var(--blue-1); }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">TO DO LIST</div>
+      <div class="slogan">不甘于平庸，就有所行动。</div>
+      <div class="date-bar" id="dateBar">加载日期中...</div>
+    </header>
+
+    <div class="stats">
+      <div class="stat-card">
+        <div class="stat-num" id="totalNum">0</div>
+        <div class="stat-label">总任务</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num done-color" id="doneNum">0</div>
+        <div class="stat-label">已完成</div>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-text">
+          <span>今日进度</span>
+          <span id="progressText">0%</span>
+        </div>
+        <div class="progress-bar"><div id="progressFill"></div></div>
+      </div>
+    </div>
+
+    <div class="input-area">
+      <input type="text" id="todoInput" placeholder="输入待办事项，按回车添加..." />
+      <button id="addBtn">添加</button>
+    </div>
+
+    <div class="plan-area">
+      <div class="plan-header" onclick="togglePlanForm()">
+        <div class="plan-header-left">
+          <span class="plan-icon">P</span>
+          <span>制定学习计划</span>
+        </div>
+        <span id="planToggle">▸</span>
+      </div>
+      <div id="planForm" class="plan-form">
+        <input type="text" id="currentLevel" placeholder="当前水平（如：零基础 / 了解HTML）" />
+        <input type="text" id="targetLevel" placeholder="目标水平（如：能独立开发网页）" />
+        <button id="generateBtn">生成学习计划</button>
+      </div>
+    </div>
+
+    <div class="chart-section">
+      <div class="chart-title">
+        <span>待办事项柱状图</span>
+        <div class="chart-legend">
+          <span><span class="legend-dot todo"></span>普通</span>
+          <span><span class="legend-dot plan"></span>计划</span>
+          <span><span class="legend-dot done"></span>已完成</span>
+        </div>
+      </div>
+      <div class="chart-area" id="chartArea"></div>
+    </div>
+
+    <footer>用行动丈量梦想 · 今日事今日毕 <span class="heart">♥</span></footer>
+  </div>
+
+  <script>
+    const todos = [];
+    const input = document.getElementById('todoInput');
+    const addBtn = document.getElementById('addBtn');
+    const chartArea = document.getElementById('chartArea');
+
+    function renderDate() {
+      const d = new Date();
+      const weekdays = ['周日','周一','周二','周三','周四','周五','周六'];
+      const dateStr = `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')} · ${weekdays[d.getDay()]}`;
+      document.getElementById('dateBar').textContent = dateStr;
+    }
+
+    function renderStats() {
+      const total = todos.length;
+      const done = todos.filter(t => t.done).length;
+      const percent = total === 0 ? 0 : Math.round(done / total * 100);
+      document.getElementById('totalNum').textContent = total;
+      document.getElementById('doneNum').textContent = done;
+      document.getElementById('progressText').textContent = percent + '%';
+      document.getElementById('progressFill').style.width = percent + '%';
+    }
+
+    // 转义 HTML，防止用户输入 HTML 标签
+    function escapeHtml(s) {
+      return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    }
+
+    // 根据任务在数组中的"权重"决定柱子高度（序号越靠后越高，做视觉层次）
+    function calcBarHeight(index, total) {
+      // 最短 40%，最长 100%，按索引等比例
+      if (total <= 1) return 100;
+      return 40 + Math.round((index / (total - 1)) * 60);
+    }
+
+    function render() {
+      chartArea.innerHTML = '';
+      if (todos.length === 0) {
+        chartArea.innerHTML = '<div class="empty-tip"><span class="emoji">🌱</span>暂无待办，开始添加你的第一项吧～</div>';
+        renderStats();
+        return;
+      }
+      const total = todos.length;
+      todos.forEach((todo, index) => {
+        const isPlan = todo.text.startsWith('[学习计划');
+        const heightPercent = calcBarHeight(index, total);
+
+        const barItem = document.createElement('div');
+        barItem.className = 'bar-item';
+        barItem.style.height = '100%';
+
+        const bar = document.createElement('div');
+        bar.className = 'bar' + (todo.done ? ' done' : '') + (isPlan ? ' plan' : '');
+        bar.style.height = heightPercent + '%';
+        bar.onclick = () => toggleTodo(index);
+
+        const barText = document.createElement('div');
+        barText.className = 'bar-text';
+        // 取前 20 字展示
+        const displayText = todo.text.length > 20 ? todo.text.slice(0,20) + '…' : todo.text;
+        barText.textContent = displayText;
+        barText.title = todo.text;
+        bar.appendChild(barText);
+
+        const delBtn = document.createElement('div');
+        delBtn.className = 'bar-delete';
+        delBtn.textContent = '×';
+        delBtn.onclick = (e) => { e.stopPropagation(); deleteTodo(index); };
+        barItem.appendChild(delBtn);
+
+        const label = document.createElement('div');
+        label.className = 'bar-label';
+        label.textContent = `#${index + 1}`;
+
+        barItem.appendChild(bar);
+        barItem.appendChild(label);
+        chartArea.appendChild(barItem);
+      });
+      renderStats();
+    }
+
+    function addTodo() {
+      const text = input.value.trim();
+      if (!text) return;
+      todos.push({ text, done: false });
+      input.value = '';
+      render();
+    }
+
+    function toggleTodo(index) {
+      todos[index].done = !todos[index].done;
+      render();
+    }
+
+    function deleteTodo(index) {
+      todos.splice(index, 1);
+      render();
+    }
+
+    addBtn.addEventListener('click', addTodo);
+    input.addEventListener('keydown', e => {
+      if (e.key === 'Enter') addTodo();
+    });
+
+    function togglePlanForm() {
+      const form = document.getElementById('planForm');
+      const toggle = document.getElementById('planToggle');
+      form.classList.toggle('open');
+      toggle.classList.toggle('open');
+    }
+
+    function generatePlan() {
+      const current = document.getElementById('currentLevel').value.trim();
+      const target = document.getElementById('targetLevel').value.trim();
+      if (!current || !target) {
+        alert('请先填写现状和目标');
+        return;
+      }
+      const steps = [
+        { text: `[学习计划·${target}] 第1步 基础入门：系统学习核心概念（建议3天）`, done: false },
+        { text: `[学习计划·${target}] 第2步 跟练模仿：照教程复现一遍（建议5天）`, done: false },
+        { text: `[学习计划·${target}] 第3步 实战练习：独立完成一个小项目（建议7天）`, done: false },
+        { text: `[学习计划·${target}] 第4步 查漏补缺：复盘遇到的问题并补强（建议3天）`, done: false },
+        { text: `[学习计划·${target}] 第5步 验收成果：检验是否达到"${target}"水平（建议2天）`, done: false }
+      ];
+      todos.push(...steps);
+      render();
+      document.getElementById('currentLevel').value = '';
+      document.getElementById('targetLevel').value = '';
+      togglePlanForm();
+    }
+
+    document.getElementById('generateBtn').addEventListener('click', generatePlan);
+
+    renderDate();
+    render();
+  </script>
+</body>
+</html>
