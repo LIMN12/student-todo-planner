@@ -186,6 +186,10 @@
       transform: translateY(-2px);
       box-shadow: 0 6px 16px rgba(30,107,255,0.4);
     }
+    button:focus-visible, input:focus-visible, .plan-header:focus-visible, .bar-item:focus-visible {
+      outline: 3px solid rgba(30,107,255,0.35);
+      outline-offset: 3px;
+    }
 
     /* 学习计划 */
     .plan-area { border-bottom: 1px solid var(--line); }
@@ -441,7 +445,7 @@
     </div>
 
     <div class="plan-area">
-      <div class="plan-header" onclick="togglePlanForm()">
+      <div class="plan-header" role="button" tabindex="0" aria-expanded="false" aria-controls="planForm">
         <div class="plan-header-left">
           <span class="plan-icon">P</span>
           <span>制定学习计划</span>
@@ -464,17 +468,33 @@
           <span><span class="legend-dot done"></span>已完成</span>
         </div>
       </div>
-      <div class="chart-area" id="chartArea"></div>
+      <div class="chart-area" id="chartArea" aria-live="polite"></div>
     </div>
 
     <footer>用行动丈量梦想 · 今日事今日毕 <span class="heart">♥</span></footer>
   </div>
 
   <script>
-    const todos = [];
+    const STORAGE_KEY = 'limn12-todos-v1';
+    let todos = loadTodos();
     const input = document.getElementById('todoInput');
     const addBtn = document.getElementById('addBtn');
     const chartArea = document.getElementById('chartArea');
+
+    function loadTodos() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+        return Array.isArray(saved) ? saved.filter(item =>
+          item && typeof item.text === 'string' && typeof item.done === 'boolean'
+        ) : [];
+      } catch {
+        return [];
+      }
+    }
+
+    function saveTodos() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(todos));
+    }
 
     function renderDate() {
       const d = new Date();
@@ -520,6 +540,15 @@
         const barItem = document.createElement('div');
         barItem.className = 'bar-item';
         barItem.style.height = '100%';
+        barItem.tabIndex = 0;
+        barItem.setAttribute('role', 'button');
+        barItem.setAttribute('aria-label', `${todo.done ? '标记为未完成' : '标记为已完成'}：${todo.text}`);
+        barItem.addEventListener('keydown', event => {
+          if (event.key === 'Enter' || event.key === ' ') {
+            event.preventDefault();
+            toggleTodo(index);
+          }
+        });
 
         const bar = document.createElement('div');
         bar.className = 'bar' + (todo.done ? ' done' : '') + (isPlan ? ' plan' : '');
@@ -555,17 +584,20 @@
       const text = input.value.trim();
       if (!text) return;
       todos.push({ text, done: false });
+      saveTodos();
       input.value = '';
       render();
     }
 
     function toggleTodo(index) {
       todos[index].done = !todos[index].done;
+      saveTodos();
       render();
     }
 
     function deleteTodo(index) {
       todos.splice(index, 1);
+      saveTodos();
       render();
     }
 
@@ -577,8 +609,10 @@
     function togglePlanForm() {
       const form = document.getElementById('planForm');
       const toggle = document.getElementById('planToggle');
+      const header = document.querySelector('.plan-header');
       form.classList.toggle('open');
       toggle.classList.toggle('open');
+      header.setAttribute('aria-expanded', String(form.classList.contains('open')));
     }
 
     function generatePlan() {
@@ -596,6 +630,7 @@
         { text: `[学习计划·${target}] 第5步 验收成果：检验是否达到"${target}"水平（建议2天）`, done: false }
       ];
       todos.push(...steps);
+      saveTodos();
       render();
       document.getElementById('currentLevel').value = '';
       document.getElementById('targetLevel').value = '';
@@ -603,6 +638,13 @@
     }
 
     document.getElementById('generateBtn').addEventListener('click', generatePlan);
+    document.querySelector('.plan-header').addEventListener('click', togglePlanForm);
+    document.querySelector('.plan-header').addEventListener('keydown', event => {
+      if (event.key === 'Enter' || event.key === ' ') {
+        event.preventDefault();
+        togglePlanForm();
+      }
+    });
 
     renderDate();
     render();
