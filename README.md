@@ -4,6 +4,8 @@
 
 ![Student Todo Planner 界面截图](docs/screenshot.png)
 
+**在线演示：** https://limn12.github.io/student-todo-planner/
+
 ## 功能
 
 - 添加、完成和删除待办任务
